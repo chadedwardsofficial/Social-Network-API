@@ -42,7 +42,17 @@ const userCount = async () => {
           res.status(500).json(err);
         }
       },
+      // This operation Creates a User with the data pulled from the req.body
+      async createUser(req, res) {
+        try {
+          const user = await User.create(req.body);
+          res.json(user);
+        } catch (err) {
+          res.status(500).json(err);
+        }
+      },
 
+        // This operation will find a user by their ID and then delete that User
        async deleteUser(req, res) {
         try {
             const user = await User.findOneAndRemove({ _id: req.params.userId });

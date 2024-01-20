@@ -9,7 +9,7 @@ const userCount = async () => {
   };
 
   module.exports = {
-    async getUsers(req, res) {
+    async getAllUsers(req, res) {
       try {
         const users = await User.find();
   
@@ -63,10 +63,69 @@ const userCount = async () => {
             }  catch (err) {
                 console.log(err);
                 res.status(500).json(err);}
-        }
+        },
+
+
+        async addFriend(req,res){
+            try {
+                const { userId } = req.params;
+                const { friendId } = req.body;
+                if (!friendId) {
+                  return res.status(400).json({ message: 'Friend ID is required' });
+                }
+                if (!mongoose.Types.ObjectId.isValid(friendId)) {
+                    return res.status(400).json({ message: 'Invalid friend ID' });
+                  } const updatedUser = await User.findOneAndUpdate(
+                    { _id: userId },
+                    { $addToSet: { friends: friendId } },
+                    { runValidators: true, new: true }
+                  );
+              
+                  if (!updatedUser) {
+                    return res.status(404).json({ message: 'User not found' });
+                  }
+              
+                  res.json(updatedUser);
+                } catch (err) {
+                  console.error(err);
+                  res.status(500).json(err);
+             
+             
+                },
+
+            
+    
   },
 
-
+  async deleteFriend(req, res){
+    try {
+        const { userId } = req.params;
+        const { friendId } = req.body;
+    
+        if (!friendId) {
+          return res.status(400).json({ message: 'Friend ID is required' });
+        }
+    
+        if (!mongoose.Types.ObjectId.isValid(friendId)) {
+          return res.status(400).json({ message: 'Invalid friend ID' });
+        }
+    
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: userId },
+          { $pull: { friends: friendId } },
+          { new: true }
+        );
+    
+        if (!updatedUser) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+    
+        res.json(updatedUser);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+      }
+  }
 
 
 

@@ -18,7 +18,61 @@ module.exports = {
       
     }
 
-  }
+  },
+  async getAllThoughts(req, res) {
+    try {
+      const thoughts = await Thought.find();
+      res.json(thoughts);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json(error);
+    }
+  },
+
+
+
+  async getSingleThought(req, res){
+    try {
+      const thought = await Thought.findOne({_id: req.params.thoughtId})
+      
+      if (!thought) {
+        return res.status(404).json({ message: "No thought with that ID" });
+      }
+       res.json(thought)
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  },
+
+
+
+
+
+
+
+  async addReaction(req, res) {
+
+    try {
+      const thought = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: req.body } },
+        { runValidators: true, new: true }
+      );
+
+      if (!thought) {
+        return res
+          .status(404)
+          .json({ message: 'No thought found' });
+      }
+
+      res.json(thought);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+
+
 
 
 

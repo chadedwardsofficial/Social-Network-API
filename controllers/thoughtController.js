@@ -15,45 +15,51 @@ module.exports = {
       } res.json({thought, updatedUser})
       
     } catch (error) {
-      
+      console.error(error);
+        res.status(500).json(error);
     }
 
   },
   async deleteThought(req, res) {
+    try {
+      const { userId } = req.params;
+      const { thoughtId} = req.body;
 
-    try { 
-      const thought = await Thought.findOneAndRemove({ _id: req.params.thoughtId });
+      if (!thoughtId) {
+        return res.status(400).json({ message: "That thought does not exist" });
+      }
 
-      if (!thought){
-        res.status(404).json({message:"Cannot find thought"})
 
-      } 
-      const user = await User.findOneAndUpdate(
-        { _id: req.params.userId },
-        { $pull: { thoughts: req.params.thoughtId } },
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: userId },
+        { $pull: { thoughts: thoughtId } },
         { new: true }
       );
       
-      res.status(200).json({message: "Thought has been deleted"})
-      res.json({thought, user})
-      
-    } catch (error) {
-      
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const thought = await Thought.findByIdAndDelete({_id: thoughtId});
+
+
+      res.json({message: `The thought has been deleted from the user's thoughts.`});
+    } catch (err) {
+      console.error(err);
+      res.status(500).json(err);
     }
-
   },
-
 
 
     async updateThought(req, res){
       try {
-        const thoughtData = await Thought.findByIdAndUpdate(req.params.userId,
+        const thoughtData = await Thought.findByIdAndUpdate(req.params.thoughtId,
         {$set: req.body},
         {new: true, runValidators:true })
         if (!thoughtData){
           return res.status(404).json({message: "No thought found by this ID"})
       }
-      return res.status(200).json(thoughtData) 
+       res.status(200).json(thoughtData) 
     } 
       catch (error) {
         console.error(error);
@@ -123,7 +129,7 @@ module.exports = {
     try {
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
-        { $pull: { reactions: { reactionsId: req.params.assignmentId } } },
+        { $pull: { reactions: { reactionsId: req.params.reactionsId } } },
         { runValidators: true, new: true }
       );
 

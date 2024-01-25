@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Types } = require("../models");
 
 // This is an aggregate function to add all the users together and return their value to get a sum of all users
 const userCount = async () => {
@@ -53,7 +53,7 @@ module.exports = {
   // This operation will find a user by their ID and then delete that User
   async deleteUser(req, res) {
     try {
-      const user = await User.findOneAndRemove({ _id: req.params.userId });
+      const user = await User.findByIdAndDelete({ _id: req.params.userId });
 
       if (!user) {
         return res
@@ -98,9 +98,7 @@ module.exports = {
       if (!friendId) {
         return res.status(400).json({ message: "Friend ID is required" });
       }
-      if (!mongoose.Types.ObjectId.isValid(friendId)) {
-        return res.status(400).json({ message: "Invalid friend ID" });
-      }
+    
       const updatedUser = await User.findOneAndUpdate(
         { _id: userId },
         { $addToSet: { friends: friendId } },
@@ -127,9 +125,6 @@ module.exports = {
         return res.status(400).json({ message: "Friend ID is required" });
       }
 
-      if (!mongoose.Types.ObjectId.isValid(friendId)) {
-        return res.status(400).json({ message: "Invalid friend ID" });
-      }
 
       const updatedUser = await User.findOneAndUpdate(
         { _id: userId },
@@ -141,7 +136,7 @@ module.exports = {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json(updatedUser);
+      res.json({message: `The user with the ID: ${friendId} has been deleted from the friends list.`});
     } catch (err) {
       console.error(err);
       res.status(500).json(err);
